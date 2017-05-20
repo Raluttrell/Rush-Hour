@@ -19,9 +19,11 @@ moveLeft oldList
 	| otherwise    = oldList
 
 -- move cars to the right one square at a time
-moveRight :: (Eq a) => a -> [a] -> [String]
-moveRight letter oldList = begining ++ "-"
+--moveRight :: (Eq a) => a -> [a] -> [String]
+moveRight letter oldList = begining ++ "_" ++ (rmLast end)
 	where (begining, end) = splitAt (getSplitPoint letter oldList) oldList
+
+rmLast inlist = reverse ( tail (reverse inlist))
 
 moveHorizontal oldList
 	| null oldList = oldList
