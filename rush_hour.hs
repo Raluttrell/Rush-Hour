@@ -14,13 +14,11 @@ replaceSegment oldList pos segment
         (replaceSegment (tail oldList) (pos - 1) segment)
 
 --moveLeft :: (Eq a) => [String] -> [String]
-moveLeft oldList
-	| (head oldList) == '-' = (drop 1 oldList) ++ "-"
-	| otherwise    = oldList
+moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
 
 -- move cars to the right one square at a time
 --moveRight :: (Eq a) => a -> [a] -> [String]
-moveRight letter oldList = begining ++ "_" ++ (rmLast end)
+moveRight letter oldList = begining ++ "-" ++ (rmLast end)
 	where (begining, end) = splitAt (getSplitPoint letter oldList) oldList
 
 rmLast inlist = reverse ( tail (reverse inlist))
