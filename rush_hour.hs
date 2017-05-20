@@ -1,4 +1,10 @@
 
+elem2d a (x:xs)
+    | null xs = elem a x
+    | null x = False
+    | elem a x  = True
+    | not (elem a x) = elem2d a xs
+     
 
 rushHour initialState 
 	| null initialState = return ()
