@@ -19,27 +19,21 @@ replaceSegment oldList pos segment
         (head oldList):
         (replaceSegment (tail oldList) (pos - 1) segment)
 
-<<<<<<< HEAD
 -- moves the car to the left
 moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
 
 -- move cars to the right one square at a time
-=======
 --moveLeft :: (Eq a) => [String] -> [String]
 moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
 
 -- move cars to the right one square at a time
 --moveRight :: (Eq a) => a -> [a] -> [String]
->>>>>>> origin/master
+
 moveRight letter oldList = begining ++ "-" ++ (rmLast end)
 	where (begining, end) = splitAt (getSplitPoint letter oldList) oldList
 
 rmLast inlist = reverse ( tail (reverse inlist))
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/master
 moveHorizontal oldList
 	| null oldList = oldList
 	| otherwise	   = transpose oldList
