@@ -5,6 +5,59 @@ elem2d a (x:xs)
     | elem a x  = True
     | not (elem a x) = elem2d a xs
      
+{-statesearch :: [String] -> String -> [String] -> [String]
+statesearch unexplored goal path
+   | null unexplored              = []
+   | goal == head unexplored      = goal:path
+   | (not (null result))          = result
+   | otherwise                    = 
+        statesearch (tail unexplored) goal path
+     where result = statesearch 
+                       (generateNewStates (head unexplored)) 
+                       goal 
+                       ((head unexplored):path)-}
+
+
+-- construct a list of horizontal cars and vertical cards for each row
+
+rm :: Eq a => a -> [a] -> [a]
+rm item inlist 
+    |null inlist = []
+    |(head inlist) == item = rm item (tail inlist)
+    |otherwise        = (head inlist) : rm item (tail inlist)
+
+
+myremoveduplicates :: Eq a => [a] -> [a] 
+myremoveduplicates inlist
+    |null inlist = []
+    |elem (head inlist) (tail inlist) = (head inlist) : myremoveduplicates (rm (head inlist) (tail inlist))
+    |otherwise          = (head inlist) : myremoveduplicates (tail inlist)
+
+
+-- removes duplicates from the rows(this matters for cars of length 3 or more)
+findCars row = myremoveduplicates (findCars2 row)
+
+-- finds all the cars in a row
+findCars2 row
+    |null (firstCarInRow row) = []
+    |otherwise              = (firstCarInRow row) ++ findCars2 (tail row)
+
+-- finds the first horizontal car in the row
+firstCarInRow row
+    |null (tail row) = []
+    |head row /= '-' &&  (elem (head row) (tail row)) = (head row):[]
+    |otherwise = firstCarInRow (tail row)
+
+findHorzCars inlist = reverse (findHorzCars2 inlist [])
+
+-- find horizontal cars with accumulator
+findHorzCars2 [] acc = acc
+findHorzCars2 (x:xs) acc = findHorzCars2 xs $!(findCars x:acc)
+
+-- find vertical cars in the list
+findVertCars inlist = findHorzCars (transpose inlist)
+
+
 
 rushHour initialState 
 	| null initialState = return ()
