@@ -78,15 +78,18 @@ replaceSegment oldList pos segment
 -- moves the car to the left
 moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
 
--- move cars to the right one square at a time
---moveLeft :: (Eq a) => [String] -> [String]
-moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
 
 -- move cars to the right one square at a time
 --moveRight :: (Eq a) => a -> [a] -> [String]
 
-moveRight letter oldList = begining ++ "-" ++ (rmLast end)
-	where (begining, end) = splitAt (getSplitPoint letter oldList) oldList
+moveRight letter oldList = let 
+                            p1 = (getSplitPoint letter oldList)
+                            p2 = (getSplit2 letter oldList)
+                            in ((slice 0 p1 oldList) ++ "-" ++ (slice p1 p2 oldList) ++ (slice (p2 + 1) 6 oldList))  
+	 
+
+
+slice from to xs = take (to - from) (drop from xs)
 
 rmLast inlist = reverse ( tail (reverse inlist))
 
@@ -105,6 +108,11 @@ movable letter row
 	| ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = False
 	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = True
 
+
+-- getSplit2 does not work
+getSplit2 letter (x:xs)
+    | x == letter && not (elem x xs) = 1
+    | otherwise                      = 1 + getSplit2 letter xs
 
 
 -- returns the postions of the split point in a row
@@ -135,8 +143,12 @@ generateNewStates currState hcl vcl = []
  --            generateNorthMoves currState vcl, generateSouthMoves currState vcl]
 
 
+generateEastMoves [] hcl acc = acc
+generateEastMoves (x:xs) (y:ys) acc = generateEastMoves xs ys ((generateMovesOneRow x y []):acc)
 
-
+-- generateMovesOneRow row carlist acc
+generateMovesOneRow row [] acc = acc
+generateMovesOneRow row (x:xs) acc = generateMovesOneRow row xs ((moveRight x row):acc)
 
 transpose ([]:_) = []
 transpose inlist = (map head inlist):transpose (map tail inlist)
