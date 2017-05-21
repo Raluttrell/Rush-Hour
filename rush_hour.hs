@@ -101,13 +101,8 @@ movable letter [] = False
 movable letter row 
 	| ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = False
 	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = True
-	
-moveOthers letter [] = []
-moveOthers letter (x:xs) 
-	| not (elem letter x) 						                          = x:(moveOthers letter xs)
-	| ((getSplitPoint letter x) + (getNumberOfLetter letter x)) == 6      = x:(moveOthers letter xs)
-	| x!!((getSplitPoint letter x) + (getNumberOfLetter letter x)) == '-' = (moveOthers letter ((moveRight letter x):xs))  
-	| otherwise = (x:xs)
+
+
 
 -- returns the postions of the split point in a row
 --getSplitPoint :: (Eq a) => a -> [a] -> Int
