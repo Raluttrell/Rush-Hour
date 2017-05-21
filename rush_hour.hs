@@ -197,3 +197,8 @@ moveablesInRow row [] acc = acc
 moveablesInRow row (hc:hcs) acc = moveablesInRow row hcs ((movable2 hc row) ++ acc)
 
 getMoveableCarsSouth inlist vcl = getMoveableCarsRight (transpose inlist) vcl
+
+getMoveableCarsLeft [] [] acc = acc
+getMoveableCarsLeft row (hc:hcs)  acc = moveablesInRow row hcs ((movable
+
+getMoveableCarsNorth inlist vcl = getMoveableCarsLeft (transpose inlist) vcl
