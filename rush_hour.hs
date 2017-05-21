@@ -103,6 +103,14 @@ movable letter [] = False
 movable letter row 
 	| ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = False
 	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = True
+        | otherwise = False
+
+movable2 letter [] = []
+movable2 letter row 
+	| ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = []
+	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = [letter]
+        | otherwise = []
+
 
 -- getSplit2 does not work
 getSplit2 letter (x:xs)
@@ -179,3 +187,13 @@ generateNorthMoves currState vcl = innerTranspose (generateWestMoves (transpose 
 --innerTranspose transposes every element of the list
 innerTranspose [] = []
 innerTranspose (x:xs) = (transpose x):(innerTranspose xs)
+
+--getMovableCars pos hcl acc
+getMoveableCarsRight [] [] acc = acc
+getMoveableCarsRight (x:xs) (y:ys) acc = (moveablesInRow x y []):acc
+
+--moveablesInRow row hcr acc
+moveablesInRow row [] acc = acc
+moveablesInRow row (hc:hcs) acc = moveablesInRow row hcs ((movable2 hc row) ++ acc)
+
+getMoveableCarsSouth inlist vcl = getMoveableCarsRight (transpose inlist) vcl
