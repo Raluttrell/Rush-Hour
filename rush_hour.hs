@@ -56,8 +56,6 @@ findHorzCars2 (x:xs) acc = findHorzCars2 xs $!(findCars x:acc)
 -- find vertical cars in the list
 findVertCars inlist = findHorzCars (transpose inlist)
 
-
-
 rushHour initialState 
 	| null initialState = return ()
 	| otherwise = do 
@@ -67,7 +65,6 @@ rushHour initialState
 --solve the rushHour puzzle
 solveRush inlist = 
     reverse (statesearch [inlist] (findHorzCars inlist) (findVertCars inlist) [])
-
 
 replaceSegment oldList pos segment
    | pos == 0  = segment ++ drop (length segment) oldList
@@ -85,11 +82,10 @@ moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
 moveRight letter oldList = let 
                             p1 = (getSplitPoint letter oldList)
                             p2 = (getSplit2 letter oldList)
-                            in ((slice 0 p1 oldList) ++ "-" ++ (slice p1 p2 oldList) ++ (slice (p2 + 1) 6 oldList))  
-	 
+                            in ((slice 0 p1 oldList) ++ "-" ++ (slice p1 p2 oldList) ++ (slice (p2 + 1) 6 oldList))  	 
 
-
-slice from to xs = take (to - from) (drop from xs)
+-- this is analagous to inlist[from:to] in matlab
+slice from to inlist = take (to - from) (drop from inlist)
 
 rmLast inlist = reverse ( tail (reverse inlist))
 
@@ -108,12 +104,10 @@ movable letter row
 	| ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = False
 	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = True
 
-
 -- getSplit2 does not work
 getSplit2 letter (x:xs)
     | x == letter && not (elem x xs) = 1
     | otherwise                      = 1 + getSplit2 letter xs
-
 
 -- returns the postions of the split point in a row
 --getSplitPoint :: (Eq a) => a -> [a] -> Int
@@ -138,17 +132,31 @@ nub l                  = nub' l []
         | otherwise    = x : nub' xs (x:ls)
 
 -- generateNewStates
-generateNewStates currState hcl vcl = []
---    concat  [generateEastMoves currstate hcl, generateWestMoves currState hcl,
- --            generateNorthMoves currState vcl, generateSouthMoves currState vcl]
+generateNewStates currstate hcl vcl = 
+    concat  [generateEastMoves currstate currstate hcl 0 [], generateWestMoves currstate currstate hcl 0 [],
+            generateNorthMoves currstate vcl, generateSouthMoves currstate vcl]
 
-
-generateEastMoves [] hcl acc = acc
-generateEastMoves (x:xs) (y:ys) acc = generateEastMoves xs ys ((generateMovesOneRow x y []):acc)
+generateEastMoves inlist [] hcl number acc = acc
+generateEastMoves inlist (x:xs) (y:ys) number acc = generateEastMoves inlist xs ys (number + 1)
+    ((replaceRows inlist (generateMovesOneRow x y []) number [])  ++ acc)
 
 -- generateMovesOneRow row carlist acc
 generateMovesOneRow row [] acc = acc
 generateMovesOneRow row (x:xs) acc = generateMovesOneRow row xs ((moveRight x row):acc)
+
+generateMovesOneRow2 row [] acc = acc
+generateMovesOneRow2 row (x:xs) acc = generateMovesOneRow row xs ((moveLeft x row):acc)
+
+--this function takes in a list of new rows, a row number, and the position
+-- it outputs a list of positions
+-- replaceRows position rowlist number accumulator
+replaceRows inlist [] number acc = acc
+replaceRows inlist (x:xs) number acc = (replaceRow inlist x number):acc
+
+
+-- this function replaces row n of a matrix with the new row
+replaceRow inlist newRow rowNumber
+    = (slice 0 rowNumber inlist) ++ [newRow] ++ (slice (rowNumber + 1) 6 inlist) 
 
 transpose ([]:_) = []
 transpose inlist = (map head inlist):transpose (map tail inlist)
@@ -159,3 +167,15 @@ validateX charX inlist
 	| null inlist = 0
 	| elem charX (head inlist) = 1
 	| otherwise 			   = 1 + (validateX charX (tail inlist))	
+
+generateWestMoves inlist [] hcl number acc = acc
+generateWestMoves inlist (x:xs) (y:ys) number acc = generateWestMoves inlist xs ys (number + 1)
+    ((replaceRows inlist (generateMovesOneRow2 x y []) number [])  ++ acc)
+
+
+generateSouthMoves currState vcl = innerTranspose (generateEastMoves (transpose currState) (transpose currState) vcl 0 [])
+generateNorthMoves currState vcl = innerTranspose (generateWestMoves (transpose currState) (transpose currState) vcl 0 [])
+
+--innerTranspose transposes every element of the list
+innerTranspose [] = []
+innerTranspose (x:xs) = (transpose x):(innerTranspose xs)
