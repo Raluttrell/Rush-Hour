@@ -4,18 +4,17 @@ elem2d a (x:xs)
     | null x = False
     | elem a x  = True
     | not (elem a x) = elem2d a xs
-     
-{-statesearch :: [String] -> String -> [String] -> [String]
-statesearch unexplored goal path
+
+    
+statesearch :: [String] -> [String] -> [String]
+statesearch unexplored path
    | null unexplored              = []
-   | goal == head unexplored      = goal:path
    | (not (null result))          = result
    | otherwise                    = 
-        statesearch (tail unexplored) goal path
+        statesearch (tail unexplored) path
      where result = statesearch 
-                       (generateNewStates (head unexplored)) 
-                       goal 
-                       ((head unexplored):path)-}
+                       (generateNewStates (head unexplored))
+                       ((head unexplored):path)
 
 
 -- construct a list of horizontal cars and vertical cards for each row
@@ -48,7 +47,7 @@ firstCarInRow row
     |head row /= '-' &&  (elem (head row) (tail row)) = (head row):[]
     |otherwise = firstCarInRow (tail row)
 
-findHorzCars inlist = reverse (findHorzCars2 inlist [])
+findHorzCars inlist = filter (not . null) (reverse (findHorzCars2 inlist []))
 
 -- find horizontal cars with accumulator
 findHorzCars2 [] acc = acc
@@ -62,8 +61,8 @@ findVertCars inlist = findHorzCars (transpose inlist)
 rushHour initialState 
 	| null initialState = return ()
 	| otherwise = do 
-		print(length (head initialState))
-		rushHour (tail initialState)
+		print(head (moveVertical initialState))
+		rushHour (tail (moveVertical initialState))
 
 
 replaceSegment oldList pos segment
@@ -75,21 +74,21 @@ replaceSegment oldList pos segment
 -- moves the car to the left
 moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
 
--- move cars to the right one square at a time
---moveLeft :: (Eq a) => [String] -> [String]
-moveLeft letter oldList = reverse (moveRight letter (reverse oldList))
+
 
 -- move cars to the right one square at a time
 --moveRight :: (Eq a) => a -> [a] -> [String]
+moveRight2 letter oldList = let 
+                            p1 = (getSplitPoint letter oldList)
+                            p2 = (getSplit2 letter oldList)
+                            in ((slice 0 p1 oldList) ++ "-" ++ (slice p1 p2 oldList) ++ (slice (p2 + 1) 6 oldList))  
 
-moveRight letter oldList = begining ++ "-" ++ (rmLast end)
-	where (begining, end) = splitAt (getSplitPoint letter oldList) oldList
+slice from to xs = take (to - from) (drop from xs)
 
 rmLast inlist = reverse ( tail (reverse inlist))
 
-moveHorizontal oldList
-	| null oldList = oldList
-	| otherwise	   = transpose oldList
+moveRight letter oldList = begining ++ "-" ++ (rmLast end)
+	where (begining, end) = splitAt (getSplitPoint letter oldList) oldList
 
 -- move the cars 
 checkStates inlist  
@@ -97,12 +96,36 @@ checkStates inlist
 	| 	otherwise = return()
 
 -- checks whether we can move a letter to the right in a row
-movable letter [] = False
-movable letter row 
+movableRight letter [] = False
+movableRight letter row 
 	| ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = False
 	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = True
+	| otherwise = False
+
+-- checks whether car is movable to the left in a row 
+movableLeft letter [] = False 
+movableLeft letter row 
+	| (getSplitPoint letter row) == 0 = False 
+	| row!!((getSplitPoint letter row) - 1) == '-' = True
+	| otherwise = False 
+
+-- generate new states 
+generateNewStates currState =
+	concat [generateStates currState, moveVertical currState]
 
 
+generateStates inlist 
+	| null inlist = inlist 
+	| not (null (findCars (head inlist))) = 
+		(generateStatesForCars (head inlist) (findCars (head inlist))) ++ (generateStates (tail inlist))
+	| otherwise = (head inlist):(generateStates (tail inlist))
+
+generateStatesForCars inlist cars
+	| null cars = [inlist]
+	| movableRight (head cars) inlist = inlist:(generateStatesForCars (moveRight2 (head cars) inlist) cars)
+	| otherwise = generateStatesForCars inlist (tail cars)
+
+moveVertical inlist = transpose (generateStates (transpose inlist))
 
 -- returns the postions of the split point in a row
 --getSplitPoint :: (Eq a) => a -> [a] -> Int
@@ -111,6 +134,10 @@ getSplitPoint letter (x:xs)
 	| x == letter = 0
 	| otherwise   = 1 + getSplitPoint letter xs
 
+-- getSplit2 does not work
+getSplit2 letter (x:xs)
+    | x == letter && not (elem x xs) = 1
+    | otherwise                      = 1 + getSplit2 letter xs
 -- returns the numebr of lettger cars in the row
 --getNumberOfLetter :: Char -> [Char] -> Int
 getNumberOfLetter letter [] = 0
