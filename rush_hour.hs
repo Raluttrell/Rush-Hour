@@ -5,18 +5,17 @@ elem2d a (x:xs)
     | elem a x  = True
     | not (elem a x) = elem2d a xs
      
-{-statesearch :: [String] -> String -> [String] -> [String]
-statesearch unexplored goal path
+
+--statesearch :: [String] -> String -> [String] -> [String]
+statesearch unexplored hcl vcl path
    | null unexplored              = []
-   | goal == head unexplored      = goal:path
+   | not  (elem2d 'X' (head unexplored)) = (head unexplored):path
    | (not (null result))          = result
    | otherwise                    = 
-        statesearch (tail unexplored) goal path
+        statesearch (tail unexplored) hcl vcl path
      where result = statesearch 
-                       (generateNewStates (head unexplored)) 
-                       goal 
-                       ((head unexplored):path)-}
-
+                       (generateNewStates hcl vcl (head unexplored)) hcl vcl
+                       ((head unexplored):path)
 
 -- construct a list of horizontal cars and vertical cards for each row
 
@@ -64,6 +63,10 @@ rushHour initialState
 	| otherwise = do 
 		print(length (head initialState))
 		rushHour (tail initialState)
+
+--solve the rushHour puzzle
+solveRush inlist = 
+    reverse (statesearch [inlist] (findHorzCars inlist) (findVertCars inlist) [])
 
 
 replaceSegment oldList pos segment
@@ -125,6 +128,14 @@ nub l                  = nub' l []
     nub' (x:xs) ls
         | x `elem` ls  = nub' xs ls
         | otherwise    = x : nub' xs (x:ls)
+
+-- generateNewStates
+generateNewStates currState hcl vcl = []
+--    concat  [generateEastMoves currstate hcl, generateWestMoves currState hcl,
+ --            generateNorthMoves currState vcl, generateSouthMoves currState vcl]
+
+
+
 
 
 transpose ([]:_) = []
