@@ -105,11 +105,13 @@ movable letter row
 	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = True
         | otherwise = False
 
-movable2 letter [] = []
 movable2 letter row 
-	| ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = []
-	| row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = [letter]
+        | (getSplit2 letter row) == (length row) = []
+        | row!!(getSplit2 letter row) == '-' = [letter]
         | otherwise = []
+	-- | ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = []
+	-- | row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = [letter]
+        -- | otherwise = []
 
 
 -- getSplit2 does not work
@@ -141,8 +143,10 @@ nub l                  = nub' l []
 
 -- generateNewStates
 generateNewStates currstate hcl vcl = 
-    concat  [generateEastMoves currstate currstate hcl 0 [], generateWestMoves currstate currstate hcl 0 [],
-            generateNorthMoves currstate vcl, generateSouthMoves currstate vcl]
+    concat  [generateEastMoves currstate currstate (getMoveableCarsRight currstate hcl ) 0 [], 
+            generateWestMoves currstate currstate (getMoveableCarsLeft currstate hcl ) 0 [],
+            generateNorthMoves currstate (getMoveableCarsNorth currstate vcl ), 
+            generateSouthMoves currstate (getMoveableCarsSouth currstate vcl )]
 
 generateEastMoves inlist [] hcl number acc = acc
 generateEastMoves inlist (x:xs) (y:ys) number acc = generateEastMoves inlist xs ys (number + 1)
@@ -160,7 +164,6 @@ generateMovesOneRow2 row (x:xs) acc = generateMovesOneRow row xs ((moveLeft x ro
 -- replaceRows position rowlist number accumulator
 replaceRows inlist [] number acc = acc
 replaceRows inlist (x:xs) number acc = (replaceRow inlist x number):acc
-
 
 -- this function replaces row n of a matrix with the new row
 replaceRow inlist newRow rowNumber
@@ -180,7 +183,6 @@ generateWestMoves inlist [] hcl number acc = acc
 generateWestMoves inlist (x:xs) (y:ys) number acc = generateWestMoves inlist xs ys (number + 1)
     ((replaceRows inlist (generateMovesOneRow2 x y []) number [])  ++ acc)
 
-
 generateSouthMoves currState vcl = innerTranspose (generateEastMoves (transpose currState) (transpose currState) vcl 0 [])
 generateNorthMoves currState vcl = innerTranspose (generateWestMoves (transpose currState) (transpose currState) vcl 0 [])
 
@@ -189,16 +191,23 @@ innerTranspose [] = []
 innerTranspose (x:xs) = (transpose x):(innerTranspose xs)
 
 --getMovableCars pos hcl acc
-getMoveableCarsRight [] [] acc = acc
-getMoveableCarsRight (x:xs) (y:ys) acc = (moveablesInRow x y []):acc
+getMoveableCarsRight [] [] = []
+getMoveableCarsRight (x:xs) (y:ys) = (moveablesInRow x y []):(getMoveableCarsRight xs ys)
+
+--for moving cars left and north
+getMoveableCarsLeft [] [] = []
+getMoveableCarsLeft  (x:xs) (y:ys) = (moveablesInRow2 x y []):(getMoveableCarsLeft xs ys)
 
 --moveablesInRow row hcr acc
 moveablesInRow row [] acc = acc
 moveablesInRow row (hc:hcs) acc = moveablesInRow row hcs ((movable2 hc row) ++ acc)
 
+--for moving cars to the left
+moveablesInRow2 row [] acc = acc
+moveablesInRow2 row (hc:hcs) acc = moveablesInRow2 row hcs ((movable2 hc row) ++  acc)
+
+-- for moving cars south and north
 getMoveableCarsSouth inlist vcl = getMoveableCarsRight (transpose inlist) vcl
-
-getMoveableCarsLeft [] [] acc = acc
-getMoveableCarsLeft row (hc:hcs)  acc = moveablesInRow row hcs ((movable
-
 getMoveableCarsNorth inlist vcl = getMoveableCarsLeft (transpose inlist) vcl
+
+movableLeft letter row = movable2 letter (reverse row)
