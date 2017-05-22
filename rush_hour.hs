@@ -7,15 +7,16 @@ elem2d a (x:xs)
      
 
 --statesearch :: [String] -> String -> [String] -> [String]
-statesearch unexplored hcl vcl path
+statesearch unexplored hcl vcl path explored
    | null unexplored              = []
    | goal (head unexplored)       = (head unexplored):path
    | (not (null result))          = result
    | otherwise                    =
-        statesearch (tail unexplored) hcl vcl path
+        statesearch (tail unexplored) hcl vcl path explored
      where result = statesearch 
-                       (generateNewStates (head unexplored) hcl vcl) hcl vcl
-                       ((head unexplored):path)
+                       (removeExplored (generateNewStates (head unexplored) hcl vcl) explored)
+                       hcl vcl
+                       ((head unexplored):path) ((head unexplored):explored)
  
  
 goal inlist = (slice 4 6 ((inlist)!!2)) == "XX"
@@ -66,7 +67,7 @@ rushHour initialState
 
 --solve the rushHour puzzle
 solveRush inlist = 
-    reverse (statesearch [inlist] (findHorzCars inlist) (findVertCars inlist) [])
+    reverse (statesearch [inlist] (findHorzCars inlist) (findVertCars inlist) [] [])
 
 replaceSegment oldList pos segment
    | pos == 0  = segment ++ drop (length segment) oldList
@@ -203,7 +204,7 @@ moveablesInRow row (hc:hcs) acc = moveablesInRow row hcs ((movable2 hc row) ++ a
 
 --for moving cars to the left
 moveablesInRow2 row [] acc = acc
-moveablesInRow2 row (hc:hcs) acc = moveablesInRow2 row hcs ((movable2 hc row) ++  acc)
+moveablesInRow2 row (hc:hcs) acc = moveablesInRow2 row hcs ((movable2 hc (reverse row)) ++  acc)
 
 -- for moving cars south and north
 getMoveableCarsSouth inlist vcl = getMoveableCarsRight (transpose inlist) vcl
@@ -211,4 +212,9 @@ getMoveableCarsNorth inlist vcl = getMoveableCarsLeft (transpose inlist) vcl
 
 movableLeft letter row = movable2 letter (reverse row)
 
+--removeExplored l1 explored
+removeExplored [] explored = []
+removeExplored (x:xs) explored
+    | elem x explored = removeExplored xs explored
+    | not (elem x explored) = x:removeExplored xs explored
 
