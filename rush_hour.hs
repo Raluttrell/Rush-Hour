@@ -9,15 +9,16 @@ elem2d a (x:xs)
 --statesearch :: [String] -> String -> [String] -> [String]
 statesearch unexplored hcl vcl path
    | null unexplored              = []
-   | not  (elem2d 'X' (head unexplored)) = (head unexplored):path
+   | goal (head unexplored)       = (head unexplored):path
    | (not (null result))          = result
-   | otherwise                    = 
+   | otherwise                    =
         statesearch (tail unexplored) hcl vcl path
      where result = statesearch 
-                       (generateNewStates hcl vcl (head unexplored)) hcl vcl
+                       (generateNewStates (head unexplored) hcl vcl) hcl vcl
                        ((head unexplored):path)
-
--- construct a list of horizontal cars and vertical cards for each row
+ 
+ 
+goal inlist = (slice 4 6 ((inlist)!!2)) == "XX"
 
 rm :: Eq a => a -> [a] -> [a]
 rm item inlist 
@@ -31,6 +32,7 @@ myremoveduplicates inlist
     |null inlist = []
     |elem (head inlist) (tail inlist) = (head inlist) : myremoveduplicates (rm (head inlist) (tail inlist))
     |otherwise          = (head inlist) : myremoveduplicates (tail inlist)
+
 
 
 -- removes duplicates from the rows(this matters for cars of length 3 or more)
@@ -109,9 +111,6 @@ movable2 letter row
         | (getSplit2 letter row) == (length row) = []
         | row!!(getSplit2 letter row) == '-' = [letter]
         | otherwise = []
-	-- | ((getSplitPoint letter row) + (getNumberOfLetter letter row)) == 6      = []
-	-- | row!!((getSplitPoint letter row) + (getNumberOfLetter letter row)) == '-' = [letter]
-        -- | otherwise = []
 
 
 -- getSplit2 does not work
@@ -211,3 +210,5 @@ getMoveableCarsSouth inlist vcl = getMoveableCarsRight (transpose inlist) vcl
 getMoveableCarsNorth inlist vcl = getMoveableCarsLeft (transpose inlist) vcl
 
 movableLeft letter row = movable2 letter (reverse row)
+
+
