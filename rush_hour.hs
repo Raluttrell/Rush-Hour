@@ -59,11 +59,22 @@ findHorzCars2 (x:xs) acc = findHorzCars2 xs $!(findCars x:acc)
 -- find vertical cars in the list
 findVertCars inlist = findHorzCars (transpose inlist)
 
-rushHour initialState 
+fancyPrint initialState 
 	| null initialState = return ()
-	| otherwise = do 
-		print(length (head initialState))
-		rushHour (tail initialState)
+	| otherwise = do
+                print ","
+		(fancy2 (head initialState))
+		fancyPrint (tail initialState)
+
+fancy2 initialState 
+	| null initialState = return ()
+	| otherwise = do
+	        print ([head initialState]) 
+		fancy2 (tail initialState)
+
+
+
+rush_hour inlist = fancyPrint (solveRush inlist)
 
 --solve the rushHour puzzle
 solveRush inlist = 
